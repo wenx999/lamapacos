@@ -40,6 +40,7 @@
   <classpathentry kind="var" path="M2_REPO/com/twitter/elephantbird/elephantbird/2.0.9/elephantbird-2.0.9.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0.jar" sourcepath="M2_REPO/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/com/google/guava/guava/r09/guava-r09.jar" sourcepath="M2_REPO/com/google/guava/guava/r09/guava-r09-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jsoup/jsoup/1.7.1/jsoup-1.7.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/mockito/mockito-all/1.8.5/mockito-all-1.8.5.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/powermock/powermock-api-mockito/1.4.10/powermock-api-mockito-1.4.10.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/powermock/powermock-api-support/1.4.10/powermock-api-support-1.4.10.jar"/>
