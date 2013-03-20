@@ -75,7 +75,7 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 
 	long recNo = 0L;
 
-	private boolean co, fe, ge, pa, pd, pt;
+	private boolean co;//, fe, ge, pa, pd, pt;
 	private FileSystem fs;
 
 	public static class InputCompatMapper extends MapReduceBase implements Mapper<WritableComparable, Writable, Text, NutchWritable> {
@@ -127,11 +127,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 	public SegmentFilter(Configuration conf, boolean co, boolean fe, boolean ge, boolean pa, boolean pd, boolean pt) {
 		super(conf);
 		this.co = co;
-		this.fe = fe;
-		this.ge = ge;
-		this.pa = pa;
-		this.pd = pd;
-		this.pt = pt;
 		try {
 			this.fs = FileSystem.get(getConf());
 		} catch (IOException e) {
@@ -143,11 +138,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 	public void configure(JobConf job) {
 		setConf(job);
 		this.co = getConf().getBoolean("segment.reader.co", true);
-		this.fe = getConf().getBoolean("segment.reader.fe", true);
-		this.ge = getConf().getBoolean("segment.reader.ge", true);
-		this.pa = getConf().getBoolean("segment.reader.pa", true);
-		this.pd = getConf().getBoolean("segment.reader.pd", true);
-		this.pt = getConf().getBoolean("segment.reader.pt", true);
 		try {
 			this.fs = FileSystem.get(getConf());
 		} catch (IOException e) {
@@ -158,11 +148,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 	private JobConf createJobConf() {
 		JobConf job = new NutchJob(getConf());
 		job.setBoolean("segment.reader.co", this.co);
-		job.setBoolean("segment.reader.fe", this.fe);
-		job.setBoolean("segment.reader.ge", this.ge);
-		job.setBoolean("segment.reader.pa", this.pa);
-		job.setBoolean("segment.reader.pd", this.pd);
-		job.setBoolean("segment.reader.pt", this.pt);
 		return job;
 	}
 
@@ -202,12 +187,7 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		JobConf job = createJobConf();
 		job.setJobName("read " + segment);
 
-		if (ge) FileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.GENERATE_DIR_NAME));
-		if (fe) FileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.FETCH_DIR_NAME));
-		if (pa) FileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.PARSE_DIR_NAME));
 		if (co) FileInputFormat.addInputPath(job, new Path(segment, Content.DIR_NAME));
-		if (pd) FileInputFormat.addInputPath(job, new Path(segment, ParseData.DIR_NAME));
-		if (pt) FileInputFormat.addInputPath(job, new Path(segment, ParseText.DIR_NAME));
 
 		job.setInputFormat(SequenceFileInputFormat.class);
 		job.setMapperClass(InputCompatMapper.class);
@@ -275,242 +255,21 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		}
 	}
 
-	private static final String[][] keys = new String[][] { { "co", "Content::\n" }, { "ge", "Crawl Generate::\n" }, { "fe", "Crawl Fetch::\n" },
-			{ "pa", "Crawl Parse::\n" }, { "pd", "ParseData::\n" }, { "pt", "ParseText::\n" } };
-
-	public void get(final Path segment, final Text key, Writer writer, final Map<String, List<Writable>> results) throws Exception {
-		LOG.info("SegmentReader: get '" + key + "'");
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		if (co) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getMapRecords(new Path(segment, Content.DIR_NAME), key);
-					results.put("co", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		if (fe) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getMapRecords(new Path(segment, CrawlDatum.FETCH_DIR_NAME), key);
-					results.put("fe", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		if (ge) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getSeqRecords(new Path(segment, CrawlDatum.GENERATE_DIR_NAME), key);
-					results.put("ge", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		if (pa) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getSeqRecords(new Path(segment, CrawlDatum.PARSE_DIR_NAME), key);
-					results.put("pa", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		if (pd) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getMapRecords(new Path(segment, ParseData.DIR_NAME), key);
-					results.put("pd", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		if (pt) threads.add(new Thread() {
-			@Override
-			public void run() {
-				try {
-					List<Writable> res = getMapRecords(new Path(segment, ParseText.DIR_NAME), key);
-					results.put("pt", res);
-				} catch (Exception e) {
-					LOG.error("Exception:", e);
-				}
-			}
-		});
-		Iterator<Thread> it = threads.iterator();
-		while (it.hasNext())
-			it.next().start();
-		int cnt;
-		do {
-			cnt = 0;
-			try {
-				Thread.sleep(5000);
-			} catch (Exception e) {
-			}
-			;
-			it = threads.iterator();
-			while (it.hasNext()) {
-				if (it.next().isAlive()) cnt++;
-			}
-			if ((cnt > 0) && (LOG.isDebugEnabled())) {
-				LOG.debug("(" + cnt + " to retrieve)");
-			}
-		} while (cnt > 0);
-		for (int i = 0; i < keys.length; i++) {
-			List<Writable> res = results.get(keys[i][0]);
-			if (res != null && res.size() > 0) {
-				for (int k = 0; k < res.size(); k++) {
-					writer.write(keys[i][1]);
-					writer.write(res.get(k) + "\n");
-				}
-			}
-			writer.flush();
-		}
-	}
-
-	private List<Writable> getMapRecords(Path dir, Text key) throws Exception {
-		MapFile.Reader[] readers = MapFileOutputFormat.getReaders(fs, dir, getConf());
-		ArrayList<Writable> res = new ArrayList<Writable>();
-		Class keyClass = readers[0].getKeyClass();
-		Class valueClass = readers[0].getValueClass();
-		if (!keyClass.getName().equals("org.apache.hadoop.io.Text")) throw new IOException("Incompatible key (" + keyClass.getName() + ")");
-		Writable value = (Writable) valueClass.newInstance();
-		// we don't know the partitioning schema
-		for (int i = 0; i < readers.length; i++) {
-			if (readers[i].get(key, value) != null) res.add(value);
-			readers[i].close();
-		}
-		return res;
-	}
-
-	private List<Writable> getSeqRecords(Path dir, Text key) throws Exception {
-		SequenceFile.Reader[] readers = SequenceFileOutputFormat.getReaders(getConf(), dir);
-		ArrayList<Writable> res = new ArrayList<Writable>();
-		Class keyClass = readers[0].getKeyClass();
-		Class valueClass = readers[0].getValueClass();
-		if (!keyClass.getName().equals("org.apache.hadoop.io.Text")) throw new IOException("Incompatible key (" + keyClass.getName() + ")");
-		Writable aKey = (Writable) keyClass.newInstance();
-		Writable value = (Writable) valueClass.newInstance();
-		for (int i = 0; i < readers.length; i++) {
-			while (readers[i].next(aKey, value)) {
-				if (aKey.equals(key)) res.add(value);
-			}
-			readers[i].close();
-		}
-		return res;
-	}
-
-	public static class SegmentReaderStats {
-		public long start = -1L;
-		public long end = -1L;
-		public long generated = -1L;
-		public long fetched = -1L;
-		public long fetchErrors = -1L;
-		public long parsed = -1L;
-		public long parseErrors = -1L;
-	}
-
-	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
-	public void list(List<Path> dirs, Writer writer) throws Exception {
-		writer.write("NAME\t\tGENERATED\tFETCHER START\t\tFETCHER END\t\tFETCHED\tPARSED\n");
-		for (int i = 0; i < dirs.size(); i++) {
-			Path dir = dirs.get(i);
-			SegmentReaderStats stats = new SegmentReaderStats();
-			getStats(dir, stats);
-			writer.write(dir.getName() + "\t");
-			if (stats.generated == -1) writer.write("?");
-			else writer.write(stats.generated + "");
-			writer.write("\t\t");
-			if (stats.start == -1) writer.write("?\t");
-			else writer.write(sdf.format(new Date(stats.start)));
-			writer.write("\t");
-			if (stats.end == -1) writer.write("?");
-			else writer.write(sdf.format(new Date(stats.end)));
-			writer.write("\t");
-			if (stats.fetched == -1) writer.write("?");
-			else writer.write(stats.fetched + "");
-			writer.write("\t");
-			if (stats.parsed == -1) writer.write("?");
-			else writer.write(stats.parsed + "");
-			writer.write("\n");
-			writer.flush();
-		}
-	}
-
-	public void getStats(Path segment, final SegmentReaderStats stats) throws Exception {
-		SequenceFile.Reader[] readers = SequenceFileOutputFormat.getReaders(getConf(), new Path(segment, CrawlDatum.GENERATE_DIR_NAME));
-		long cnt = 0L;
-		Text key = new Text();
-		for (int i = 0; i < readers.length; i++) {
-			while (readers[i].next(key))
-				cnt++;
-			readers[i].close();
-		}
-		stats.generated = cnt;
-		Path fetchDir = new Path(segment, CrawlDatum.FETCH_DIR_NAME);
-		if (fs.exists(fetchDir) && fs.getFileStatus(fetchDir).isDir()) {
-			cnt = 0L;
-			long start = Long.MAX_VALUE;
-			long end = Long.MIN_VALUE;
-			CrawlDatum value = new CrawlDatum();
-			MapFile.Reader[] mreaders = MapFileOutputFormat.getReaders(fs, fetchDir, getConf());
-			for (int i = 0; i < mreaders.length; i++) {
-				while (mreaders[i].next(key, value)) {
-					cnt++;
-					if (value.getFetchTime() < start) start = value.getFetchTime();
-					if (value.getFetchTime() > end) end = value.getFetchTime();
-				}
-				mreaders[i].close();
-			}
-			stats.start = start;
-			stats.end = end;
-			stats.fetched = cnt;
-		}
-		Path parseDir = new Path(segment, ParseData.DIR_NAME);
-		if (fs.exists(fetchDir) && fs.getFileStatus(fetchDir).isDir()) {
-			cnt = 0L;
-			long errors = 0L;
-			ParseData value = new ParseData();
-			MapFile.Reader[] mreaders = MapFileOutputFormat.getReaders(fs, parseDir, getConf());
-			for (int i = 0; i < mreaders.length; i++) {
-				while (mreaders[i].next(key, value)) {
-					cnt++;
-					if (!value.getStatus().isSuccess()) errors++;
-				}
-				mreaders[i].close();
-			}
-			stats.parsed = cnt;
-			stats.parseErrors = errors;
-		}
-	}
-
 	private static final int MODE_DUMP = 0;
 
-	private static final int MODE_LIST = 1;
+//	private static final int MODE_LIST = 1;
 
-	private static final int MODE_GET = 2;
+	private static final int MODE_DEFAULT = -0x3ffff;
 
 	public static void main(String[] args) throws Exception {
 		if (args.length < 2) {
 			usage();
 			return;
 		}
-		int mode = -1;
+		int mode = MODE_DEFAULT;
 		if (args[0].equals("-dump")) mode = MODE_DUMP;
-		else if (args[0].equals("-list")) mode = MODE_LIST;
-		else if (args[0].equals("-get")) mode = MODE_GET;
-
+//		else if (args[0].equals("-list")) mode = MODE_LIST;
+		
 		boolean co = true;
 		boolean fe = true;
 		boolean ge = true;
@@ -558,36 +317,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 				return;
 			}
 			segmentReader.dump(new Path(input), new Path(output));
-			return;
-		case MODE_LIST:
-			ArrayList<Path> dirs = new ArrayList<Path>();
-			for (int i = 1; i < args.length; i++) {
-				if (args[i] == null) continue;
-				if (args[i].equals("-dir")) {
-					Path dir = new Path(args[++i]);
-					FileStatus[] fstats = fs.listStatus(dir, HadoopFSUtil.getPassDirectoriesFilter(fs));
-					Path[] files = HadoopFSUtil.getPaths(fstats);
-					if (files != null && files.length > 0) {
-						dirs.addAll(Arrays.asList(files));
-					}
-				} else dirs.add(new Path(args[i]));
-			}
-			segmentReader.list(dirs, new OutputStreamWriter(System.out, "UTF-8"));
-			return;
-		case MODE_GET:
-			input = args[1];
-			if (input == null) {
-				System.err.println("Missing required argument: <segment_dir>");
-				usage();
-				return;
-			}
-			String key = args.length > 2 ? args[2] : null;
-			if (key == null) {
-				System.err.println("Missing required argument: <keyValue>");
-				usage();
-				return;
-			}
-			segmentReader.get(new Path(input), new Text(key), new OutputStreamWriter(System.out, "UTF-8"), new HashMap<String, List<Writable>>());
 			return;
 		default:
 			System.err.println("Invalid operation: " + args[0]);
