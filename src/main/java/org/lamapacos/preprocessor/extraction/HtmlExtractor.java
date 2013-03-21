@@ -14,7 +14,7 @@ public class HtmlExtractor implements Extractor<Text,Text> {
 	@Override
 	public Text extract(Text source) {
 		// TODO Auto-generated method stub
-		return null;
+		return source;
 	}
 	
 }
