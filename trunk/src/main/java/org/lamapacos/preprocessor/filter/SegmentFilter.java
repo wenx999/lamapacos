@@ -233,9 +233,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		job.setMapperClass(InputCompatMapper.class);
 		job.setReducerClass(SegmentFilter.class);
 
-//		Path tempDir = new Path(job.get("hadoop.tmp.dir", "/tmp") + "/segfilter-" + new java.util.Random().nextInt());
-//		fs.delete(tempDir, true);
-
 		FileOutputFormat.setOutputPath(job, output);
 		job.setOutputFormat(TextOutputFormat.class);
 		job.setOutputKeyClass(Text.class);
@@ -266,7 +263,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		}
 		
 		Configuration conf = new Configuration();
-		final FileSystem fs = FileSystem.get(conf);
 		SegmentFilter segmentReader = new SegmentFilter(conf);
 		// collect required args
 		switch (mode) {
