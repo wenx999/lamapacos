@@ -265,7 +265,7 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 			return;
 		}
 		
-		Configuration conf = NutchConfiguration.create();
+		Configuration conf = new Configuration();
 		final FileSystem fs = FileSystem.get(conf);
 		SegmentFilter segmentReader = new SegmentFilter(conf);
 		// collect required args
