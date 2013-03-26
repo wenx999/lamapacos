@@ -4,8 +4,18 @@
 <!-- Put url-specific property overrides in this file. -->
 
 <configuration>
-<property>
-  <name>directly.accept.url.regex</name>
-  <value>+.*1mall.91ka.com.*;+.*3c.1mall.com.*;</value>
-</property>
+    <property>
+      <name>directly.accept.url.regex</name>
+      <value>+.*/review/.*;</value>
+    </property>
+    
+    <property>
+      <name>directly.accept.html.regex</name>
+      <value>strong.scoring@score;dd:not(.merit,.write,.clearfix)@content;;</value>
+      <description>the rules is like this: selector11[@nodename];selector12[@nodename]...;;selector21[@nodename];selector22[@nodename]....
+      the way of the selector use can look at the http://jsoup.org/cookbook/extracting-data/selector-syntax. And if you want to get the attribute 
+      of the node, you can make the selector like this: selector::attribute1 attribute2.... Lastly, the nodename is a choice, if you don't rename
+      the node, the default name of this node is selector.
+      </description>
+    </property>
 </configuration>
