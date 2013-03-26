@@ -5,7 +5,6 @@ package org.lamapacos.preprocessor.extraction;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -17,8 +16,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.mortbay.log.Log;
@@ -45,19 +43,19 @@ public class ExtractPhase extends Configured{
 			throws IOException, InterruptedException {
 			// convert on the fly from old formats with UTF8 keys.
 			// UTF8 deprecated and replaced by Text.
-			System.out.println();
+//			System.out.println();
 			if(key instanceof Text) {
 				newKey.set(key.toString());
 				key = newKey;
 			}
-			
-			if(value.toString().equals("")) {
+			Writable v = extractor.extract(value);
+			if(v.toString().equals("")) {
 				if(LOG.isDebugEnabled()) {
 					LOG.debug("Empty record with key: " + key.toString() + ", skiping...");
 				}
 				return;
 			}
-			context.write(key, extractor.extract(value));
+			context.write(key, v);
 		}
 	}
 	
@@ -68,7 +66,7 @@ public class ExtractPhase extends Configured{
 		}
 		Configuration conf = getConf() == null ? new Configuration() : getConf();
 		Job job = new Job(conf, "extract " + sourceHome);
-		job.setInputFormatClass(KeyValueTextInputFormat.class);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		FileInputFormat.setInputPaths(job, sourceHome);
 		FileOutputFormat.setOutputPath(job, output);
