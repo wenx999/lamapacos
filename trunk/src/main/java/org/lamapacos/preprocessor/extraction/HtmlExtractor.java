@@ -4,6 +4,7 @@
 package org.lamapacos.preprocessor.extraction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -67,10 +68,11 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 	@Override
 	public Writable extract(Writable source) {
 		int i, j, k;
-		StringBuilder result = new StringBuilder("");
+//		StringBuilder result = new StringBuilder("");
 		List<String> list = new ArrayList<String>();
 		Elements element;
 		Document doc = Jsoup.parse(source.toString());
+		List<LamapacosWritable> records = new ArrayList<LamapacosWritable>(); 
 		// //test
 		// element = doc.select("strong.scoring  p");
 		// System.out.print(element.size());
@@ -137,11 +139,19 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 					element.clear();
 				}
 			}// second for
-			for (j = 0; j < list.size(); j++)
-				result.append(list.get(j) + this.CONTENT_END + "\n");
+			int score;
+			for (j = 0; j < list.size(); j++){
+				String[] split = list.get(j).split(CONTENT_SEP);
+				score = Integer.parseInt(split[0], 0);
+				ScoredContent scoredContent = new ScoredContent(score, split[1]);
+				records.add(new LamapacosWritable(scoredContent));
+			}
 			list.removeAll(list); 
 		}// first for 
-		return new Text(result.toString());
+		
+		LamapacosArrayWritable ret = new LamapacosArrayWritable();      //ret is the result extract from this page.
+		ret.set(records.toArray(new LamapacosWritable[records.size()]));
+		return ret;
 	}
 
 }
