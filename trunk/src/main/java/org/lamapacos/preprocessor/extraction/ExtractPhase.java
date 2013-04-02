@@ -37,7 +37,7 @@ public class ExtractPhase extends Configured{
 	public static class ExtractPhaseMapper 
 		extends Mapper<WritableComparable, Writable, Writable, Writable> {
 		private Text newKey = new Text();
-		Extractor extractor = new HtmlExtractor();
+		Extractor extractor = new HtmlExtractor(); //configurable
 		@Override
 		public void map(WritableComparable key, Writable value, Context context)
 			throws IOException, InterruptedException {
@@ -74,8 +74,8 @@ public class ExtractPhase extends Configured{
 		job.setMapperClass(ExtractPhaseMapper.class);
 		job.setNumReduceTasks(0);
 		job.setSpeculativeExecution(false);
-		job.setMapOutputKeyClass(Writable.class);
-		job.setMapOutputValueClass(Writable.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(LamapacosArrayWritable.class);
 		int ret = job.waitForCompletion(true) ? 0 : 1;
 		
 		if(LOG.isInfoEnabled()) {
