@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -19,7 +20,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.lamapacos.preprocessor.extraction.ExtractPhase.ExtractPhaseMapper;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +38,13 @@ public class Splitter extends Configured{
 
 	
 	public static class SplitPhaseMapper extends Mapper<WritableComparable, LamapacosArrayWritable, WritableComparable, Writable> {
-		private PseudoTokenizer tokenizer = new PseudoTokenizer();
+		private Tokenizer tokenizer = new NLPIRTokenizer();
 		@Override
 		public void map(WritableComparable key, LamapacosArrayWritable value, Context context) 
 			throws IOException, InterruptedException{
-			LamapacosWritable[] records = (LamapacosWritable[])value.get();
-			for(LamapacosWritable wrappedRecord : records) {
-				Writable record = wrappedRecord.get();
+			Writable[] records = value.get();
+			for(Writable wrappedRecord : records) {
+				Writable record = ((LamapacosWritable) wrappedRecord).get();
 				if(record instanceof ScoredContent) {
 					ScoredContent content = (ScoredContent)record;
 					String outputVal = tokenizer.segment(content.getContent());
