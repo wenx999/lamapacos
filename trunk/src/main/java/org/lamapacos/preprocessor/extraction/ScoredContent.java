@@ -66,4 +66,16 @@ public final class ScoredContent implements Writable {
 		builder.append("]");
 		return builder.toString();
 	}
+	public int getScore() {
+		return score;
+	}
+	public void setScore(int score) {
+		this.score = score;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
 }
