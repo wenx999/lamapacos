@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.lamapacos.preprocessor.extraction;
+package org.lamapacos.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;

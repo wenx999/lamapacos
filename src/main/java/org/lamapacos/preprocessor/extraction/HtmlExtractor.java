@@ -13,6 +13,9 @@ import org.apache.hadoop.io.Writable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
+import org.lamapacos.io.LamapacosArrayWritable;
+import org.lamapacos.io.LamapacosWritable;
+import org.lamapacos.io.ScoredContent;
 
 /**
  * @author hadoop

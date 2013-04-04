@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.lamapacos.preprocessor.extraction;
+package org.lamapacos.io;
 
 import org.apache.hadoop.io.GenericWritable;
 import org.apache.hadoop.io.Writable;
