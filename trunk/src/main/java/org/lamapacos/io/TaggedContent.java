@@ -9,14 +9,12 @@ import org.apache.hadoop.io.Text;
  * @author hadoop
  *
  */
-public class TaggedContent {
-	private Text content;
-	private Text tag;
+public class TaggedContent extends TwoTuple<Text, Text>{
 	/**
 	 * default constructor
 	 */
 	public TaggedContent() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 	
 	/**
@@ -25,34 +23,33 @@ public class TaggedContent {
 	 * @param tag
 	 */
 	public TaggedContent(Text content, Text tag) {
-		this.content = content;
-		this.tag = tag;
+		super(content, tag);
 	}
 	
 	/**
 	 * @return the content
 	 */
 	public Text getContent() {
-		return content;
+		return this.first;
 	}
 	/**
 	 * @param content the content to set
 	 */
 	public void setContent(Text content) {
-		this.content = content;
+		this.first = content;
 	}
 	/**
 	 * @return the tag
 	 */
 	public Text getTag() {
-		return tag;
+		return this.second;
 	}
 	
 	/**
 	 * @param tag the tag to set
 	 */
 	public void setTag(Text tag) {
-		this.tag = tag;
+		this.second = tag;
 	}
 
 }

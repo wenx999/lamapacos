@@ -7,9 +7,17 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 public class TwoTuple<S extends Writable,T extends Writable> implements Writable{
-	private S first;
-	private T second;
+	protected S first;
+	protected T second;
 
+	public TwoTuple() {
+	}
+	
+	public TwoTuple(S first, T second) {
+		this.first = first;
+		this.second = second;
+	}
+	
 	@Override
 	public int hashCode() {
 		int ret = 31;
@@ -22,6 +30,7 @@ public class TwoTuple<S extends Writable,T extends Writable> implements Writable
 	public boolean equals(Object obj) {
 		if(!(obj instanceof TwoTuple))
 			return false;
+		@SuppressWarnings("rawtypes")
 		TwoTuple tmp = (TwoTuple)obj;
 		return this.first.equals(tmp.getFirst()) ? this.second.equals(tmp.getSecond()) : false;
 	}
