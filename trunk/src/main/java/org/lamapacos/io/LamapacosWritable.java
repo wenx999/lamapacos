@@ -24,7 +24,10 @@ public class LamapacosWritable extends GenericWritable{
 			    org.apache.hadoop.io.MapWritable.class,
 			    org.apache.hadoop.io.Text.class,
 			    org.apache.hadoop.io.MD5Hash.class,
-			    ScoredContent.class
+			    ScoredContent.class,
+			    TwoTuple.class,
+			    SegmentedContentTuple.class,
+			    TaggedContent.class
 		};
 	}
 	
