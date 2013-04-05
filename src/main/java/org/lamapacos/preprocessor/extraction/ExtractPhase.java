@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.lamapacos.io.LamapacosArrayWritable;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class ExtractPhase extends Configured{
 	public static class ExtractPhaseMapper 
 		extends Mapper<WritableComparable, Writable, Writable, Writable> {
 		private Text newKey = new Text();
-		Extractor extractor = new HtmlExtractor(); //configurable
+		Extractor extractor = new HtmlExtractor();
 		@Override
 		public void map(WritableComparable key, Writable value, Context context)
 			throws IOException, InterruptedException {
@@ -68,7 +68,7 @@ public class ExtractPhase extends Configured{
 		Configuration conf = getConf() == null ? new Configuration() : getConf();
 		Job job = new Job(conf, "extract " + sourceHome);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		FileInputFormat.setInputPaths(job, sourceHome);
 		FileOutputFormat.setOutputPath(job, output);
 		
@@ -77,6 +77,8 @@ public class ExtractPhase extends Configured{
 		job.setSpeculativeExecution(false);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(LamapacosArrayWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(LamapacosArrayWritable.class);
 		int ret = job.waitForCompletion(true) ? 0 : 1;
 		
 		if(LOG.isInfoEnabled()) {

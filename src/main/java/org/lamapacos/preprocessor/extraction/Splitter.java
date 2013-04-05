@@ -18,10 +18,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.lamapacos.io.LamapacosArrayWritable;
 import org.lamapacos.io.LamapacosWritable;
 import org.lamapacos.io.ScoredContent;
+import org.lamapacos.io.SegmentedContentTuple;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,15 +46,20 @@ public class Splitter extends Configured{
 		public void map(WritableComparable key, LamapacosArrayWritable value, Context context) 
 			throws IOException, InterruptedException{
 			Writable[] records = value.get();
+			SegmentedContentTuple segconTuple = new SegmentedContentTuple();
 			for(Writable wrappedRecord : records) {
 				Writable record = ((LamapacosWritable) wrappedRecord).get();
 				if(record instanceof ScoredContent) {
 					ScoredContent content = (ScoredContent)record;
 					String outputVal = tokenizer.segment(content.getContent());
-					context.write(key, new Text(outputVal));
+					segconTuple.setContent(new Text(content.getContent()));
+					segconTuple.setSegmentedContent(new Text(outputVal));
+					context.write(key, new LamapacosWritable(segconTuple));
 				} else {
 					String outputVal = tokenizer.segment(record.toString());
-					context.write(key, new Text(outputVal));
+					segconTuple.setContent(new Text(record.toString()));
+					segconTuple.setSegmentedContent(new Text(outputVal));
+					context.write(key, new LamapacosWritable(segconTuple));
 				}
 			}
 		}
@@ -67,7 +73,7 @@ public class Splitter extends Configured{
 		Configuration conf = getConf() == null ? new Configuration() : getConf();
 		Job job = new Job(conf, "split " + sourceHome);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 		FileInputFormat.setInputPaths(job, sourceHome);
 		FileOutputFormat.setOutputPath(job, output);
 		
@@ -77,7 +83,7 @@ public class Splitter extends Configured{
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(LamapacosWritable.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(Text.class);
+		job.setOutputValueClass(LamapacosWritable.class);
 		int ret = job.waitForCompletion(true) ? 0 : 1;
 		
 		if(LOG.isInfoEnabled()) {
