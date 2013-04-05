@@ -56,7 +56,7 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 
 	public static void setPatterns(Configuration conf) {
 		int i;
-		String regexs = conf.get(HTML_REGEX, "html");
+		String regexs = conf.get(HTML_REGEX, "*");
 		String[] split = regexs.split(HTML_REGEX_SEP+HTML_REGEX_SEP);
 		acceptNode = new String[split.length][];
 		for (i = 0; i < split.length; i++) {
@@ -69,7 +69,7 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 	@Override
 	public Writable extract(Writable source) {
 		int i, j, k;
-//		StringBuilder result = new StringBuilder("");
+
 		List<String> list = new ArrayList<String>();
 		Elements element;
 		Document doc = Jsoup.parse(source.toString());
@@ -85,47 +85,45 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 		for (i = 0; i < acceptNode.length; i++) {
 
 			for (j = 0; j < acceptNode[i].length; j++) {
-				// look for the childnode: acceptNode[i][j] which predefind in the conf
-				String[] split;
-				split = acceptNode[i][j].split("@");				
+				// look for the childnode: acceptNode[i][j] which predefind in the conf				
 
 				// get the content of attribute
-				if (-1 != split[0].indexOf("::")) {
+				if (-1 != acceptNode[i][j].indexOf("::")) {
 					String[] attrsplit;
-					attrsplit = split[0].split("::| ");
+					attrsplit = acceptNode[i][j].split("::| ");
 					for (int t = 1; t < attrsplit.length; t++) {
 						element = doc.select(attrsplit[0]);
 						k = 0;
 						for (Element tmp : element) {
 							Attributes attr = tmp.attributes();
 							if (1 == t) {
-								list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); //nodeName + 
+								list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); 
 							} else {
 								if (k < list.size()){
 									String tmpStr = list.get(k);
 									list.remove(k);
-									tmpStr += this.CONTENT_SEP + attr.get(attrsplit[t]); //attrsplit[t] +"=" + 
+									tmpStr += this.CONTENT_SEP + attr.get(attrsplit[t]); 
 									list.add(k++, tmpStr);
 								}else
-									list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); //nodeName + 
+									list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); 
 							}
 						}
 						element.clear();
 					}
 				} else {// get the content of node
-					element = doc.select(split[0]);
+					element = doc.select(acceptNode[i][j]);
 					k = 0;
 					for (Element tmp : element) {
 						if (0 == j) {
-							list.add(tmp.text()); //nodeName + 
+							list.add(tmp.text());
 						} else {
 							if (k < list.size()){
 								String tmpStr = list.get(k);
 								list.remove(k);
-								tmpStr += this.CONTENT_SEP + tmp.text(); //nodeName + 
+								tmpStr += this.CONTENT_SEP + tmp.text(); 
 								list.add(k++, tmpStr);
 							}else
-								list.add(tmp.text()); //nodeName + 
+								list.add(tmp.text()); 
 						}
 					}
 					element.clear();

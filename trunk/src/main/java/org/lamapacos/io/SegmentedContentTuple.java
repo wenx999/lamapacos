@@ -30,7 +30,7 @@ public class SegmentedContentTuple extends TwoTuple<Text, Text> {
 	 * @param content the content to set
 	 */
 	public void setContent(Text content) {
-		this.setContent(content);
+		this.setFirst(content);
 	}
 
 	/**

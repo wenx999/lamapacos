@@ -63,7 +63,7 @@ public class TwoTuple<S extends Writable,T extends Writable> implements Writable
 	public S getFirst() {
 		return this.first;
 	}
-	public void setScore(S first) {
+	public void setFirst(S first) {
 		this.first = first;
 	}
 	public T getSecond() {
