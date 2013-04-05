@@ -4,11 +4,9 @@
 package org.lamapacos.preprocessor.extraction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
@@ -18,6 +16,7 @@ import org.lamapacos.io.LamapacosWritable;
 import org.lamapacos.io.ScoredContent;
 
 /**
+ * parse the html pase
  * @author hadoop
  * 
  */
@@ -27,7 +26,6 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 	private static final String HTML_REGEX = "directly.accept.html.regex";
 	private static final String HTML_REGEX_SEP = ";";
 	private static final String CONTENT_SEP = "__CONT_SEP";
-	private static final String CONTENT_END = "__CONT_END";
 	private static String[][] acceptNode;
 
 	@SuppressWarnings("static-access")
@@ -89,16 +87,7 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 			for (j = 0; j < acceptNode[i].length; j++) {
 				// look for the childnode: acceptNode[i][j] which predefind in the conf
 				String[] split;
-				split = acceptNode[i][j].split("@");
-				String nodeName;
-
-				// if no rename the node, the defautl name will be acceptNode[i][j];
-				if (split.length < 2) {
-					nodeName = acceptNode[i][j] + ":";
-				} else {
-					nodeName = split[1] + ":";
-				}
-				
+				split = acceptNode[i][j].split("@");				
 
 				// get the content of attribute
 				if (-1 != split[0].indexOf("::")) {
@@ -110,15 +99,15 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 						for (Element tmp : element) {
 							Attributes attr = tmp.attributes();
 							if (1 == t) {
-								list.add(nodeName + attrsplit[t] +"=" + attr.get(attrsplit[t]));
+								list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); //nodeName + 
 							} else {
 								if (k < list.size()){
 									String tmpStr = list.get(k);
 									list.remove(k);
-									tmpStr += this.CONTENT_SEP + attrsplit[t] +"=" + attr.get(attrsplit[t]);
+									tmpStr += this.CONTENT_SEP + attr.get(attrsplit[t]); //attrsplit[t] +"=" + 
 									list.add(k++, tmpStr);
 								}else
-									list.add(nodeName + attrsplit[t] +"=" + attr.get(attrsplit[t]));
+									list.add(attrsplit[t] +"=" + attr.get(attrsplit[t])); //nodeName + 
 							}
 						}
 						element.clear();
@@ -128,15 +117,15 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 					k = 0;
 					for (Element tmp : element) {
 						if (0 == j) {
-							list.add(nodeName + tmp.text());
+							list.add(tmp.text()); //nodeName + 
 						} else {
 							if (k < list.size()){
 								String tmpStr = list.get(k);
 								list.remove(k);
-								tmpStr += this.CONTENT_SEP + nodeName + tmp.text();
+								tmpStr += this.CONTENT_SEP + tmp.text(); //nodeName + 
 								list.add(k++, tmpStr);
 							}else
-								list.add(nodeName + tmp.text());
+								list.add(tmp.text()); //nodeName + 
 						}
 					}
 					element.clear();
@@ -145,7 +134,8 @@ public class HtmlExtractor implements Extractor<Writable, Writable> {
 			int score;
 			for (j = 0; j < list.size(); j++){
 				String[] split = list.get(j).split(CONTENT_SEP);
-				score = Integer.parseInt(split[0], 0);
+				split[0].trim();
+				score = Integer.parseInt(String.valueOf(split[0].charAt(0)));
 				ScoredContent scoredContent = new ScoredContent(score, split[1]);
 				records.add(new LamapacosWritable(scoredContent));
 			}
