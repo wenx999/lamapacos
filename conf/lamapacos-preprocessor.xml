@@ -18,4 +18,9 @@
       the node, the default name of this node is selector.
       </description>
     </property>
+    
+    <property>
+      <name>dir.dictionary.location</name>
+      <value>resource/dictionary_test</value>
+    </property>
 </configuration>
