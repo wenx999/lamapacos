@@ -21,8 +21,8 @@ public class TwoTuple<S extends Writable,T extends Writable> implements Writable
 	@Override
 	public int hashCode() {
 		int ret = 31;
-		ret += ret * 7 + first.hashCode();
-		ret += ret * 7 + second.hashCode();
+		ret += ret * 7 + ((first == null) ? 0 :first.hashCode());
+		ret += ret * 7 + ((second == null) ? 0 :second.hashCode());
 		return ret;
 	}
 	
