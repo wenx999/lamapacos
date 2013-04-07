@@ -1,38 +1,32 @@
 package org.lamapacos.util;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
-
-import org.apache.hadoop.conf.Configuration;
-//import java.util.Iterator;
-//import java.util.Map;
+import java.util.Map;
 
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-public class ReadDictionary {
-	private Configuration conf;
-	private static final String DICTIONARY_REGEX = "dir.dictionary.location";
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+public class DictionaryUtil extends Configured{
+	private static final String DICTIONARY_REGEX = "sentiment.word.dictionary.location";
 	
-	public ReadDictionary(){
-		conf = new Configuration();
+	public DictionaryUtil(){
+		setConf(new Configuration());
 		this.addResource();
 	}	
-	public ReadDictionary(Configuration conf){
-		this.conf = conf;
+	public DictionaryUtil(Configuration conf){
+		setConf(conf);
 		this.addResource();
 	}
-	
-	public void setConfiguration(Configuration conf) {
-		this.conf = conf;
-	}
-	public Configuration getConfiguration() {
-		return this.conf;
-	}
+
 	public void addResource() {
-		this.conf.addResource("lamapacos-preprocessor.xml");
+		getConf().addResource("lamapacos-preprocessor.xml");
 	}
 	
 	/**
@@ -62,7 +56,7 @@ public class ReadDictionary {
 	 * 
 	 * @param excelFile  the object of read excel  
 	 */
-	public boolean readExcel(File excelFile, HashMap<String, String[]> hashmap){
+	public boolean readExcel(File excelFile, Map<String, String[]> outSidemap){
 		Workbook rwb = null;
 		Cell cell = null;
 		
@@ -77,7 +71,7 @@ public class ReadDictionary {
 					cell = sheet.getCell(j, i);
 					value[j-1] = cell.getContents();
 				}
-				hashmap.put(key, value);
+				outSidemap.put(key, value);
 			}
 		} catch (BiffException e) {
 			e.printStackTrace();
@@ -94,24 +88,36 @@ public class ReadDictionary {
 	 * 
 	 * read all the dictionary from the document which predefine in the lamapacos-preprocessor.xml 
 	 */
-	public HashMap<String, String[]> readDictionaryDir (){
-		int i;
+	public HashMap<String, String[]> readDictionary (){
 		HashMap<String, String[]> hashmap = new HashMap<String, String[]>();
 		
-		String regexs = conf.get(DICTIONARY_REGEX, "dictionary");
+		return (HashMap<String, String[]>) readDictionary(hashmap);
+	}
+	
+	public Map<String, String[]> readDictionary (Map<String, String[]> outSideMap){
+		int i;
+		
+		String regexs = getConf().get(DICTIONARY_REGEX, "dictionary");
 		File dir = new File(regexs);
-		File[] dictionaryFile = dir.listFiles();
+		File[] dictionaryFile = dir.listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File dir, String name) {
+				if(name.startsWith("."))
+					return false;
+				return true;
+			}
+		});
 		for (i = 0; i < dictionaryFile.length; i ++){
-			readExcel(dictionaryFile[i], hashmap);
+			readExcel(dictionaryFile[i], outSideMap);
 		}
 		
-		return hashmap;
-		
+		return outSideMap;
 	}
 //	public static void main(String[] args){
 //		String excelFileName = "dictionary.xls";
 //			try {
-//				HashMap<String, String[]> hashmap = ReadDictionary.readExcel(new File(excelFileName));
+//				HashMap<String, String[]> hashmap = DictionaryUtil.readExcel(new File(excelFileName));
 //				Iterator iter = hashmap.entrySet().iterator();
 //				while (iter.hasNext()) {
 //				    Map.Entry entry = (Map.Entry) iter.next();

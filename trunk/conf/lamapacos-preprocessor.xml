@@ -20,7 +20,7 @@
     </property>
     
     <property>
-      <name>dir.dictionary.location</name>
-      <value>resource/dictionary_test</value>
+      <name>sentiment.word.dictionary.location</name>
+      <value>resource/dictionary</value>
     </property>
 </configuration>

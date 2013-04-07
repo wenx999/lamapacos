@@ -12,7 +12,7 @@ import org.junit.Test;
 
 
 public class TestReadDictionary {
-	ReadDictionary readDic = new ReadDictionary();
+	DictionaryUtil readDic = new DictionaryUtil();
 
 	private static final String answerText =  new String("赏信罚明PH5  脏乱NN7  便宜PH5  好PH7  敏悟PH3  ");
 
@@ -31,7 +31,7 @@ public class TestReadDictionary {
 	@Test
 	public void textExtractor() {
 		HashMap<String, String[]> hashmap;
-		hashmap = readDic.readDictionaryDir();
+		hashmap = readDic.readDictionary();
 		Iterator<Entry<String, String[]>> iter = hashmap.entrySet().iterator();
 		String text = new String();
 		while (iter.hasNext()) {
