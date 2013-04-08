@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 import org.junit.Test;
 
 
-public class TestReadDictionary {
+public class ReadDictionaryTest {
 	DictionaryUtil readDic = new DictionaryUtil();
 
 	private static final String answerText =  new String("赏信罚明PH5  脏乱NN7  便宜PH5  好PH7  敏悟PH3  ");
