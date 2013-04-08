@@ -13,6 +13,8 @@ public class SegmentedContentTuple extends TwoTuple<Text, Text> {
 
 	public SegmentedContentTuple() {
 		super();
+		this.first = new Text();
+		this.second = new Text();
 	}
 	
 	public SegmentedContentTuple(Text content, Text segmentedContent) {
