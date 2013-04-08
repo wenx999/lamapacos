@@ -12,15 +12,19 @@
     <property>
       <name>directly.accept.html.regex</name>
       <value>strong.scoring;dd:not(.merit,.write,.clearfix);;</value>
-      <description>the rules is like this: selector11[@nodename];selector12[@nodename]...;;selector21[@nodename];selector22[@nodename]....
+      <description>the rules is like this: selector11;selector12...;;selector21;selector22....
       the way of the selector use can look at the http://jsoup.org/cookbook/extracting-data/selector-syntax. And if you want to get the attribute 
-      of the node, you can make the selector like this: selector::attribute1 attribute2.... Lastly, the nodename is a choice, if you don't rename
-      the node, the default name of this node is selector.
+      of the node, you can make the selector like this: selector::attribute1 attribute2....
       </description>
     </property>
     
     <property>
       <name>sentiment.word.dictionary.location</name>
       <value>resource/dictionary</value>
+    </property>
+    
+    <property>
+      <name>degree.word.dictionary.location</name>
+      <value>resource/degreeDictionary.xls</value>
     </property>
 </configuration>
