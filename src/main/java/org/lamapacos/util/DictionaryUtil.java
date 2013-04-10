@@ -125,7 +125,7 @@ public class DictionaryUtil extends Configured{
 	 */
 	public Map<String, String[]> readDegreeDictionary () throws BiffException, IOException{
 		Map<String, String[]> outSideMap;
-		String regexs = getConf().get(SENTIMENT_DICTIONARY_REGEX,"resource/degreeDictionary.xls");
+		String regexs = getConf().get(DEGREE_DICTIONARY_REGEX,"resource/degreeDictionary.xls");
 		File excelFile = new File(regexs);
 		outSideMap = readExcel(excelFile);
 		return outSideMap;
