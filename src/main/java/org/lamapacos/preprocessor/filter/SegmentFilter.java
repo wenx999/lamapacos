@@ -17,7 +17,6 @@
 package org.lamapacos.preprocessor.filter;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,16 +39,15 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.util.Progressable;
 import org.apache.nutch.crawl.NutchWritable;
 import org.apache.nutch.protocol.Content;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.nutch.util.NutchJob;
+import org.lamapacos.util.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +57,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 	public static final Logger LOG = LoggerFactory.getLogger(SegmentFilter.class);
 
 	private FileSystem fs;
-	private static final String URL_REGEX = "directly.accept.url.regex";
-	private static final String URL_REGEX_SEP = ";";
 	
 	public static interface Filter extends Configurable{
 		public abstract boolean accept(Object obj);
@@ -87,8 +83,8 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		
 		public RegexsFilter() {}
 		public static void setPatterns(Configuration conf) {
-			String regexs = conf.get(URL_REGEX, "+.*");
-			String [] splits = regexs.split(URL_REGEX_SEP);
+			String regexs = conf.get(Constant.URL_REGEX, Constant.DEFAULT_URL_VALUE);
+			String [] splits = regexs.split(Constant.REGEX_SEP);
 			for(String regex : splits) {
 				try{
 					PolarPattern p = new PolarPattern(regex.charAt(0),Pattern.compile(regex.substring(1)));
@@ -117,6 +113,7 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 		
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static class InputCompatMapper extends MapReduceBase implements Mapper<WritableComparable, Writable, Text, NutchWritable> {
 		private Text newKey = new Text();
 
@@ -165,7 +162,7 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 
 	public SegmentFilter(Configuration conf) {
 		super(conf);
-		conf.addResource("lamapacos-preprocessor.xml");
+//		conf.addResource("lamapacos-preprocessor.xml");
 		RegexsFilter.setPatterns(conf);
 		try {
 			this.fs = FileSystem.get(getConf());
@@ -201,7 +198,6 @@ public class SegmentFilter extends Configured implements Reducer<Text, NutchWrit
 //		StringBuffer dump = new StringBuffer();
 		if(!regexsFilter.accept(key.toString())) return;
 		output.collect(key, values.next());
-//		dump.append("URL_posa::"+key.toString()+"\n");
 //		while (values.hasNext()) {
 //			Writable value = values.next().get(); // unwrap	
 //			if (value instanceof Content) {

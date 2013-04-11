@@ -1,6 +1,7 @@
 package org.lamapacos.util;
 
 import java.io.File;
+
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,21 +14,15 @@ import jxl.read.biff.BiffException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+
 public class DictionaryUtil extends Configured{
-	private static final String SENTIMENT_DICTIONARY_REGEX = "sentiment.word.dictionary.location";
-	private static final String DEGREE_DICTIONARY_REGEX = "degree.word.dictionary.location";
 	
 	public DictionaryUtil(){
 		setConf(new Configuration());
-		this.addResource();
 	}	
+	
 	public DictionaryUtil(Configuration conf){
 		setConf(conf);
-		this.addResource();
-	}
-
-	public void addResource() {
-		getConf().addResource("lamapacos-preprocessor.xml");
 	}
 	
 	/**
@@ -98,7 +93,7 @@ public class DictionaryUtil extends Configured{
 	public Map<String, String[]> readDictionary (Map<String, String[]> outSideMap){
 		int i;
 		
-		String regexs = getConf().get(SENTIMENT_DICTIONARY_REGEX, "resource/dictionary");
+		String regexs = getConf().get(Constant.SENTIMENT_DICTIONARY_REGEX, Constant.DEFAULT_SENTDIC_VALUE);
 		File dir = new File(regexs);
 		File[] dictionaryFile = dir.listFiles(new FilenameFilter() {
 
@@ -125,7 +120,7 @@ public class DictionaryUtil extends Configured{
 	 */
 	public Map<String, String[]> readDegreeDictionary () throws BiffException, IOException{
 		Map<String, String[]> outSideMap;
-		String regexs = getConf().get(DEGREE_DICTIONARY_REGEX,"resource/degreeDictionary.xls");
+		String regexs = getConf().get(Constant.DEGREE_DICTIONARY_REGEX, Constant.DEFAULT_DEGEDIC_VALUE);
 		File excelFile = new File(regexs);
 		outSideMap = readExcel(excelFile);
 		return outSideMap;

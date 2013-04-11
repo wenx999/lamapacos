@@ -27,4 +27,9 @@
       <name>degree.word.dictionary.location</name>
       <value>resource/degreeDictionary.xls</value>
     </property>
+    
+    <property>
+      <name>extract.datastructure</name>
+      <value>org.lamapacos.io.ScoredContent</value>
+    </property>
 </configuration>

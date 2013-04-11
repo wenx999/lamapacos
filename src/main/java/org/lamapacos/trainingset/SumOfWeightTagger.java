@@ -21,7 +21,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.StringUtils;
@@ -69,7 +68,7 @@ public class SumOfWeightTagger extends Mapper<WritableComparable, LamapacosWrita
 	private static Map<String, String[]> degreeDictionary;
 	@Override
 	public void setup(Context context) {
-		dictionary = new DictionaryUtil().readDictionary();
+		dictionary = new DictionaryUtil(context.getConfiguration()).readDictionary();
 		try {
 			degreeDictionary = new DictionaryUtil().readDegreeDictionary();
 		} catch (BiffException e) {
@@ -196,6 +195,29 @@ public class SumOfWeightTagger extends Mapper<WritableComparable, LamapacosWrita
 	 * @throws ClassNotFoundException
 	 */
 	public void tagAll(Path[] sourceHome, Path output) throws IOException, InterruptedException, ClassNotFoundException {
+		if(LOG.isInfoEnabled()) {
+			Log.info("TagPhase: taging source:" + sourceHome);
+		}
+		
+		Configuration conf = getConf() == null ? new Configuration():getConf();
+		Job job = new Job(conf, "tag " + sourceHome);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		FileInputFormat.setInputPaths(job, sourceHome);
+		FileOutputFormat.setOutputPath(job, output);
+		job.setMapperClass(SumOfWeightTagger.class);
+		job.setNumReduceTasks(0);
+		job.setSpeculativeExecution(false);
+		job.setMapOutputKeyClass(Writable.class);
+		job.setMapOutputValueClass(TaggedContent.class);
+		int ret = job.waitForCompletion(true) ? 0:1;
+		if(LOG.isInfoEnabled()) {
+			LOG.info("TagPhase: done");
+		}
+		System.exit(ret);
+	}
+	
+	public void tagAll(Path sourceHome, Path output) throws IOException, InterruptedException, ClassNotFoundException {
 		if(LOG.isInfoEnabled()) {
 			Log.info("TagPhase: taging source:" + sourceHome);
 		}
