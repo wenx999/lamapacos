@@ -38,7 +38,13 @@ public class ExtractPhase extends Configured{
 	public static class ExtractPhaseMapper 
 		extends Mapper<WritableComparable, Writable, Writable, Writable> {
 		private Text newKey = new Text();
-		Extractor extractor = new HtmlExtractor();
+		Extractor extractor = null;
+		
+		@Override
+		public void setup(Context context) {
+			extractor = new HtmlExtractor(context.getConfiguration());
+		}
+		
 		@Override
 		public void map(WritableComparable key, Writable value, Context context)
 			throws IOException, InterruptedException {
@@ -57,6 +63,32 @@ public class ExtractPhase extends Configured{
 				return;
 			}
 			context.write(key, v);
+		}
+	}
+
+	public void extract(Path sourceHome, Path output) throws IOException, ClassNotFoundException, InterruptedException {
+		
+		if(LOG.isInfoEnabled()) {
+			Log.info("ExtractPhase: extracting source: " + sourceHome);
+		}
+		Configuration conf = getConf() == null ? new Configuration() : getConf();
+		Job job = new Job(conf, "extract " + sourceHome);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		FileInputFormat.setInputPaths(job, sourceHome);
+		FileOutputFormat.setOutputPath(job, output);
+		
+		job.setMapperClass(ExtractPhaseMapper.class);
+		job.setNumReduceTasks(0);
+		job.setSpeculativeExecution(false);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(LamapacosArrayWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(LamapacosArrayWritable.class);
+		int ret = job.waitForCompletion(true) ? 0 : 1;
+		
+		if(LOG.isInfoEnabled()) {
+			LOG.info("ExtractPhase: done");
 		}
 	}
 	

@@ -23,6 +23,7 @@ import org.lamapacos.io.LamapacosArrayWritable;
 import org.lamapacos.io.LamapacosWritable;
 import org.lamapacos.io.ScoredContent;
 import org.lamapacos.io.SegmentedContentTuple;
+import org.lamapacos.util.Constant;
 import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ public class Splitter extends Configured{
 	
 
 	
+	@SuppressWarnings("rawtypes")
 	public static class SplitPhaseMapper extends Mapper<WritableComparable, LamapacosArrayWritable, WritableComparable, Writable> {
 		private Tokenizer tokenizer = new NLPIRTokenizer();
 		@Override
@@ -55,12 +57,21 @@ public class Splitter extends Configured{
 					segconTuple.setContent(new Text(content.getContent()));
 					segconTuple.setSegmentedContent(new Text(outputVal));
 					context.write(key, new LamapacosWritable(segconTuple));
-				} else {
+				}else if (record instanceof Text){
+					String[] split = record.toString().split(Constant.CONTENT_SEP);
+					String outputVal = new String();
+					for (int i = 0; i < split.length; i ++)
+						outputVal += tokenizer.segment(split[i]);
+					segconTuple.setContent(new Text(record.toString()));
+					segconTuple.setSegmentedContent(new Text(outputVal));
+					context.write(key, new LamapacosWritable(segconTuple));	
+				}else {
 					String outputVal = tokenizer.segment(record.toString());
 					segconTuple.setContent(new Text(record.toString()));
 					segconTuple.setSegmentedContent(new Text(outputVal));
 					context.write(key, new LamapacosWritable(segconTuple));
-				}
+				}			
+
 			}
 		}
 	}
@@ -90,6 +101,34 @@ public class Splitter extends Configured{
 			LOG.info("SplitPhase: done");
 		}
 		System.exit(ret);
+
+	}
+	
+public void split(Path sourceHome, Path output ) throws IOException, ClassNotFoundException, InterruptedException {
+		
+		if(LOG.isInfoEnabled()) {
+			Log.info("SplitPhase: splitting source: " + sourceHome);
+		}
+		Configuration conf = getConf() == null ? new Configuration() : getConf();
+		Job job = new Job(conf, "split " + sourceHome);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		FileInputFormat.setInputPaths(job, sourceHome);
+		FileOutputFormat.setOutputPath(job, output);
+		
+		job.setMapperClass(SplitPhaseMapper.class);
+		job.setNumReduceTasks(0);
+		job.setSpeculativeExecution(false);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(LamapacosWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(LamapacosWritable.class);
+		
+		job.waitForCompletion(true);
+		
+		if(LOG.isInfoEnabled()) {
+			LOG.info("SplitPhase: done");
+		}
 	}
 	
 	
