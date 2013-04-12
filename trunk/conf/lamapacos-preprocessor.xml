@@ -29,6 +29,11 @@
     </property>
     
     <property>
+      <name>tagmapping.dictionary.location</name>
+      <value>resource/TagMapping.xls</value>
+    </property>
+    
+    <property>
       <name>extract.datastructure</name>
       <value>org.lamapacos.io.ScoredContent</value>
     </property>
