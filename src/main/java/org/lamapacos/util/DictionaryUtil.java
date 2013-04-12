@@ -41,7 +41,7 @@ public class DictionaryUtil extends Configured{
 			String[] value = new String[sheet.getColumns()-1];
 			for (int j = 1; j < sheet.getColumns(); j ++){
 				cell = sheet.getCell(j, i);
-				value[j-1] = cell.getContents();
+				value[j-1] = cell.getContents() == null ? new String("") : cell.getContents();
 			}
 			hashmap.put(key, value);
 		}
@@ -65,7 +65,7 @@ public class DictionaryUtil extends Configured{
 				String[] value = new String[sheet.getColumns()-1];
 				for (int j = 1; j < sheet.getColumns(); j ++){
 					cell = sheet.getCell(j, i);
-					value[j-1] = cell.getContents();
+					value[j-1] = cell.getContents() == null ? new String("") : cell.getContents();
 				}
 				outSidemap.put(key, value);
 			}
@@ -106,8 +106,7 @@ public class DictionaryUtil extends Configured{
 		});
 		for (i = 0; i < dictionaryFile.length; i ++){
 			readExcel(dictionaryFile[i], outSideMap);
-		}
-		
+		}	
 		return outSideMap;
 	}
 	
@@ -122,6 +121,14 @@ public class DictionaryUtil extends Configured{
 		Map<String, String[]> outSideMap;
 		String regexs = getConf().get(Constant.DEGREE_DICTIONARY_REGEX, Constant.DEFAULT_DEGEDIC_VALUE);
 		File excelFile = new File(regexs);
+		outSideMap = readExcel(excelFile);
+		return outSideMap;
+	}
+	
+	public Map<String, String[]> readTagMapDictionary() throws IOException, BiffException{
+		Map<String, String[]> outSideMap;
+		String regex = getConf().get(Constant.TAGMAP_DICTIONARY_REGEX, Constant.DEFAULT_TAGMAPDIC_VALUE);
+		File excelFile = new File(regex);
 		outSideMap = readExcel(excelFile);
 		return outSideMap;
 	}
