@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class StopWords {
 	private static final String STOP_WORDS = "阿的了呀地得呵哈哦噢喔恩额嗯喽唏嘘";
-	private static final String STOP_PUNCTUATION_MARK = "，。？！、……";
+	private static final String STOP_PUNCTUATION_MARK = "!.?,:：，。？！、……";
 	private static HashMap<String, String[]> sentimenMap;
 	
 	public StopWords(){
